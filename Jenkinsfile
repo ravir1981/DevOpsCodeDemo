@@ -1,50 +1,57 @@
-
-pipeline{
-    tools{
-       
+pipeline {
+    tools {
+        jdk 'myjava'
         maven 'mymaven'
     }
-	agent any
-      stages{
-           stage('Checkout the code'){
-	    
-               steps{
-		 echo 'cloning the repo'
-                 git 'https://github.com/Sonal0409/DevOpsClassCodes.git'
-              }
-          }
-          stage('Compile'){
-             
-              steps{
-                  echo 'complie the code again..'
-                  sh 'mvn compile'
-	      }
-          }
-          stage('CodeReview'){
-		  
-              steps{
-		    
-		  echo 'codeReview'
-                  sh 'mvn pmd:pmd'
-              }
-          }
-           stage('UnitTest'){
-		  
-              steps{
-	         
-                  sh 'mvn test'
-              }
-          
-          }
-        
-          stage('Package'){
-		  
-              steps{
-		  
-                  sh 'mvn package'
-              }
-          }
-	     
-          
-      }
+    
+    agent any
+    
+    stages {
+        stage ('CloneRepo') {
+            steps {
+		sh 'echo "Cloning the repo"'
+                git 'https://github.com/ravir1981/DevOpsCodeDemo.git'
+            }
+        }
+        stage ('Compile the code') {
+            steps {
+                sh 'echo "Compiling the code"'
+                sh 'mvn compile'
+            }
+        }
+        stage ('Code Review') {
+            steps {
+		sh 'echo "Review the code"'
+                sh 'mvn pmd:pmd'
+            }
+        }
+        stage ('Unit Test') {
+            steps {
+		sh 'echo "Test the code"'
+                sh 'mvn test'
+            }
+            post {
+                success {
+                    junit 'target/surefire-reports/*.xml'
+                }
+            }
+        }
+        stage ('Code Coverage') {
+            steps {
+		sh 'echo "Run code coverage check"'
+                sh 'mvn cobertura:cobertura -Dcobertura.report.format=xml'
+            }
+            post {
+                success {
+                    cobertura autoUpdateHealth: false, autoUpdateStability: false, coberturaReportFile: '**/target/site/cobertura/coverage.xml', conditionalCoverageTargets: '70, 0, 0', failUnhealthy: false, failUnstable: false, lineCoverageTargets: '80, 0, 0', maxNumberOfBuilds: 0, methodCoverageTargets: '80, 0, 0', onlyStable: false, sourceEncoding: 'ASCII', zoomCoverageChart: false
+                }
+            }
+        }
+        stage ('Package the Code') {
+            steps {
+		sh 'echo "Package the code"'
+                sh 'mvn package'
+            }
+        }
+    }
 }
