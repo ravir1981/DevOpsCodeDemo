@@ -24,6 +24,11 @@ pipeline {
 		sh 'echo "Review the code"'
                 sh 'mvn pmd:pmd'
             }
+	    post {
+                success {
+                    recordIssues(tools: [pmdParser(pattern: '**/pmd.xml')])
+                }
+            }
         }
         stage ('Unit Test') {
             steps {
